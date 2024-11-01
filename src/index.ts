@@ -113,8 +113,8 @@ const conditionValidator = z.object({
 })
 let nodeValidator = z.object({
   condition: conditionValidator,
-  action: actionValidator,
-  elseAction: actionValidator.optional(),
+  actions: z.array(actionValidator),
+  elseActions: z.array(actionValidator).optional(),
 });
 nodeValidator = nodeValidator.extend({
   // sub-branches of logic

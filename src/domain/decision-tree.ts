@@ -7,7 +7,7 @@
 *
 */
 
-import { Action, ActionResult, executeAction, ExecutedAction } from "./action";
+import { Action, executeAction, ExecutedAction } from "./action";
 import { Condition, testCondition } from "./condition";
 import { hasProperty } from "./util";
 
@@ -19,9 +19,9 @@ export interface DecisionNode {
   /** the nodes represent any additional logic that should be executed as "child code" of this node, like opening {} brackets */
   nodes: DecisionNode[]
   /** what to do when `condition` evaluates to true */
-  action: Action
+  actions: Action[]
   /** what to do when `condition` evaluates to false */
-  elseAction?: Action
+  elseActions?: Action[]
 }
 
 /**
@@ -34,30 +34,21 @@ export interface DecisionTree extends DecisionNode {
 }
 
 export interface ExecutedDecisionNode extends DecisionNode {
-  action: ExecutedAction
+  /** what the condition evaluated to. */
+  conditionResult: boolean
+  actions: ExecutedAction[]
   nodes: ExecutedDecisionNode[]
 }
 
 export const executeDecisionNode = (decisionNode: DecisionNode, data: unknown): ExecutedDecisionNode | DecisionNode => {
-  let actionResult: ExecutedAction = {
-    conditionResult: false,
-    ...decisionNode.action,
-    executionResult: {
-      output: {
-        // faking as if all actions have the same parameterts for this exercise
-        smsDeliveryReport: false,
-      },
-      resultMessage: 'N/A',
-      success: false
-    }
-  }
+  let actionResults: ExecutedAction[] = []
   let executedNodes: (DecisionNode | ExecutedDecisionNode)[] = []
   // @ts-ignore for this exercise, ignoring specific property types
-  if(testCondition({ condition: decisionNode.condition, propertyValue: data[decisionNode.condition.targetPropertyName] })){
-    actionResult = {
-      ...executeAction(decisionNode.action),
-      conditionResult: true,
-    }
+  const conditionResult = testCondition({ condition: decisionNode.condition, propertyValue: data[decisionNode.condition.targetPropertyName] })
+  if(conditionResult){
+    actionResults = decisionNode.actions.map(action => ({
+      ...executeAction(action),
+    }))
     if(decisionNode.nodes.length){
       executedNodes = decisionNode.nodes.map(node => {
         return executeDecisionNode(node, data)
@@ -65,19 +56,21 @@ export const executeDecisionNode = (decisionNode: DecisionNode, data: unknown): 
     }
     return {
       ...decisionNode,
-      action: actionResult,
+      actions: actionResults,
       nodes: executedNodes,
     }
-  } else if(decisionNode.elseAction){
+  } else if(decisionNode.elseActions && decisionNode.elseActions.length > 0){
     // `condition` was false and we have the action for else branch specified
-    actionResult.conditionResult = false
     //
     // Note: we store the else branch results in `actionResult` too,
     // ..to avoid having two result fields but only one having results at once.
-    actionResult = executeAction(decisionNode.elseAction)
+    actionResults = decisionNode.elseActions.map(action => ({
+      ...executeAction(action),
+    }))
     return {
       ...decisionNode,
-      elseAction: actionResult,
+      conditionResult,
+      elseActions: actionResults,
       nodes: executedNodes,
     }
   } else {
