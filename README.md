@@ -51,7 +51,7 @@ In this example, `currentDay` and `compareTo` dates are the same date, so the `t
 				}
 			}
 		],
-		"nodes": []
+		"subActions": []
 	},
 	"data": {
 		"currentDay": "2024-10-30T10:42:33.740Z"
@@ -77,7 +77,7 @@ You will receive the following JSON response with execution results:
 		"targetPropertyType": "date",
 		"compareTo": "2024-10-30T00:00:00.000Z"
 	},
-	"nodes": []
+	"subActions": []
 }
 ```
 
@@ -127,7 +127,7 @@ This example will execute multiple actions: 1) SMS 2) Email 3) another SMS
 				}
 			}
 		],
-		"nodes": []
+		"subActions": []
 	},
 	"data": {
 		"currentDay": "2024-10-30T10:42:33.740Z"
@@ -174,7 +174,158 @@ And you'll receive the result with multiple action results:
 			}
 		}
 	],
-	"nodes": [],
+	"subActions": [],
 	"name": "MultipleNotifications"
+}
+```
+
+#### JSON 3. Looped execution of subtree 10 times
+
+`POST` `/execute-decision-tree`:
+
+```
+{
+	"decisionTree": {
+		"name": "Looped Subtree",
+		"condition": {
+			"comparisonType": "directComparison",
+			"targetPropertyName": "currentDay",
+			"targetPropertyType": "date",
+			"compareTo": "2024-10-30T00:00:00.000Z"
+		},
+		"actions": [
+		],
+		"elseActions": [
+		],
+		"repeatCount": 10,
+		"subActions": [
+			{
+				"type": "SMSAction",
+				"parameters": {
+					"phoneNumber": "+995599431331"
+				}
+			}
+		]
+	},
+	"data": {
+		"currentDay": "2024-10-30T10:42:33.740Z"
+	}
+}
+```
+
+You'll receive the response with each subtree execution:
+
+```
+{
+	"condition": {
+		"comparisonType": "directComparison",
+		"targetPropertyName": "currentDay",
+		"targetPropertyType": "date",
+		"compareTo": "2024-10-30T00:00:00.000Z"
+	},
+	"actions": [],
+	"elseActions": [],
+	"subActions": [
+		{
+			"type": "SMSAction",
+			"parameters": {
+				"phoneNumber": "+995599431331"
+			}
+		}
+	],
+	"repeatCount": 10,
+	"name": "Looped Subtree",
+	"subtreeOutputs": [
+		[
+			{
+				"success": true,
+				"resultMessage": "SMS sent!",
+				"output": {
+					"smsDeliveryReport": true
+				}
+			}
+		],
+		[
+			{
+				"success": true,
+				"resultMessage": "SMS sent!",
+				"output": {
+					"smsDeliveryReport": true
+				}
+			}
+		],
+		[
+			{
+				"success": true,
+				"resultMessage": "SMS sent!",
+				"output": {
+					"smsDeliveryReport": true
+				}
+			}
+		],
+		[
+			{
+				"success": true,
+				"resultMessage": "SMS sent!",
+				"output": {
+					"smsDeliveryReport": true
+				}
+			}
+		],
+		[
+			{
+				"success": true,
+				"resultMessage": "SMS sent!",
+				"output": {
+					"smsDeliveryReport": true
+				}
+			}
+		],
+		[
+			{
+				"success": true,
+				"resultMessage": "SMS sent!",
+				"output": {
+					"smsDeliveryReport": true
+				}
+			}
+		],
+		[
+			{
+				"success": true,
+				"resultMessage": "SMS sent!",
+				"output": {
+					"smsDeliveryReport": true
+				}
+			}
+		],
+		[
+			{
+				"success": true,
+				"resultMessage": "SMS sent!",
+				"output": {
+					"smsDeliveryReport": true
+				}
+			}
+		],
+		[
+			{
+				"success": true,
+				"resultMessage": "SMS sent!",
+				"output": {
+					"smsDeliveryReport": true
+				}
+			}
+		],
+		[
+			{
+				"success": true,
+				"resultMessage": "SMS sent!",
+				"output": {
+					"smsDeliveryReport": true
+				}
+			}
+		]
+	]
 }
 ```

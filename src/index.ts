@@ -118,7 +118,8 @@ let nodeValidator = z.object({
 });
 nodeValidator = nodeValidator.extend({
   // sub-branches of logic
-  nodes: z.array(nodeValidator).optional()
+  subActions: z.array(actionValidator).optional(),
+  repeatCount: z.number().optional(),
 });
 const rootNodeValidator = nodeValidator.extend({
   name: z.string(),
