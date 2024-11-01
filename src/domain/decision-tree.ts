@@ -19,14 +19,17 @@ export interface DecisionNode {
   condition: Condition
   /** allow looping (running this decision node more than once, checking again `condition` on each run):
   * 1. `untilConditionFalse` will behave like `while(condition)`
-  * 2. if it's a `number`, it will behave like `(for i = 0; i < repeatCount; i++)`
+  * 2. if it's a `number`, it will behave like `(for i = 0; i < x; i++)`
   * 3. if it's `0` or `undefined`, then it's run only once
   * 4. if we wanted to loop without checking `condition`,
-  * ... then we should duplicate the Action in the `actions` array, or add `repeatCount` to `Action` itself.
+  * ... then we should duplicate the Action in the `actions` array, or add `x` to `Action` itself.
   */
-  repeatCount?: /*'untilConditionFalse' | 0 | */ number;
-  /** the nodes represent any additional logic that should be executed as "child code" of this node, like opening {} brackets */
-  subActions: Action[]
+  /**
+  * repeat count: we can add features by adding 0 or 'untilConditionFalse'
+  */
+  x?: number;
+  /** sub actions: the subtree represents any additional logic that should be looped if the condition is met */
+  subtree: Action[]
   subtreeOutputs?: (Action | ExecutedAction)[][]
   /** what to do when `condition` evaluates to true */
   actions: Action[]
@@ -47,7 +50,7 @@ export interface ExecutedDecisionNode extends DecisionNode {
   /** what the condition evaluated to. */
   conditionResult: boolean
   actions: ExecutedAction[]
-  subActions: ExecutedAction[]
+  subtree: ExecutedAction[]
 }
 
 export const executeDecisionNode = (decisionNode: DecisionNode, data: unknown): ExecutedDecisionNode | DecisionNode => {
@@ -84,10 +87,10 @@ export const executeDecisionNode = (decisionNode: DecisionNode, data: unknown): 
   //
   // Execute sub-tree of actions
   //
-  if(decisionNode.repeatCount && decisionNode.repeatCount > 0 && decisionNode.subActions.length){
+  if(decisionNode.x && decisionNode.x > 0 && decisionNode.subtree.length){
     /** function which executes the subtree once */
     const executeSubActions = (): (Action | ExecutedAction)[] => {
-      return decisionNode.subActions.map(subAction => {
+      return decisionNode.subtree.map(subAction => {
         if(checkCondition()){
           return executeAction(subAction)
         } else {
@@ -96,9 +99,9 @@ export const executeDecisionNode = (decisionNode: DecisionNode, data: unknown): 
       })
     }
     /** push each subtree execution into output.
-     */
+    */
     console.log('START LOOP: subtree')
-    for(let i = 0; i < decisionNode.repeatCount; i++){
+    for(let i = 0; i < decisionNode.x; i++){
       console.log(`LOOP ITERATION ${i}: subtree`)
       executedSubActions.push(executeSubActions())
     }

@@ -51,7 +51,7 @@ In this example, `currentDay` and `compareTo` dates are the same date, so the `t
 				}
 			}
 		],
-		"subActions": []
+		"subtree": []
 	},
 	"data": {
 		"currentDay": "2024-10-30T10:42:33.740Z"
@@ -77,7 +77,7 @@ You will receive the following JSON response with execution results:
 		"targetPropertyType": "date",
 		"compareTo": "2024-10-30T00:00:00.000Z"
 	},
-	"subActions": []
+	"subtree": []
 }
 ```
 
@@ -127,7 +127,7 @@ This example will execute multiple actions: 1) SMS 2) Email 3) another SMS
 				}
 			}
 		],
-		"subActions": []
+		"subtree": []
 	},
 	"data": {
 		"currentDay": "2024-10-30T10:42:33.740Z"
@@ -174,7 +174,7 @@ And you'll receive the result with multiple action results:
 			}
 		}
 	],
-	"subActions": [],
+	"subtree": [],
 	"name": "MultipleNotifications"
 }
 ```
@@ -197,8 +197,8 @@ And you'll receive the result with multiple action results:
 		],
 		"elseActions": [
 		],
-		"repeatCount": 10,
-		"subActions": [
+		"x": 10,
+		"subtree": [
 			{
 				"type": "SMSAction",
 				"parameters": {
@@ -225,7 +225,7 @@ You'll receive the response with each subtree execution:
 	},
 	"actions": [],
 	"elseActions": [],
-	"subActions": [
+	"subtree": [
 		{
 			"type": "SMSAction",
 			"parameters": {
@@ -233,7 +233,7 @@ You'll receive the response with each subtree execution:
 			}
 		}
 	],
-	"repeatCount": 10,
+	"x": 10,
 	"name": "Looped Subtree",
 	"subtreeOutputs": [
 		[
