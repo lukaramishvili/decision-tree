@@ -18,7 +18,10 @@ export interface DecisionNode {
   condition: Condition
   /** the nodes represent any additional logic that should be executed as "child code" of this node, like opening {} brackets */
   nodes: DecisionNode[]
+  /** what to do when `condition` evaluates to true */
   action: Action
+  /** what to do when `condition` evaluates to false */
+  elseAction?: Action
 }
 
 /**
@@ -37,6 +40,7 @@ export interface ExecutedDecisionNode extends DecisionNode {
 
 export const executeDecisionNode = (decisionNode: DecisionNode, data: unknown): ExecutedDecisionNode | DecisionNode => {
   let actionResult: ExecutedAction = {
+    conditionResult: false,
     ...decisionNode.action,
     executionResult: {
       output: {
@@ -50,17 +54,34 @@ export const executeDecisionNode = (decisionNode: DecisionNode, data: unknown): 
   let executedNodes: (DecisionNode | ExecutedDecisionNode)[] = []
   // @ts-ignore for this exercise, ignoring specific property types
   if(testCondition({ condition: decisionNode.condition, propertyValue: data[decisionNode.condition.targetPropertyName] })){
-    actionResult = executeAction(decisionNode.action)
+    actionResult = {
+      ...executeAction(decisionNode.action),
+      conditionResult: true,
+    }
     if(decisionNode.nodes.length){
       executedNodes = decisionNode.nodes.map(node => {
         return executeDecisionNode(node, data)
       })
     }
-  }
-  return {
-    ...decisionNode,
-    action: actionResult,
-    nodes: executedNodes,
+    return {
+      ...decisionNode,
+      action: actionResult,
+      nodes: executedNodes,
+    }
+  } else if(decisionNode.elseAction){
+    // `condition` was false and we have the action for else branch specified
+    actionResult.conditionResult = false
+    //
+    // Note: we store the else branch results in `actionResult` too,
+    // ..to avoid having two result fields but only one having results at once.
+    actionResult = executeAction(decisionNode.elseAction)
+    return {
+      ...decisionNode,
+      elseAction: actionResult,
+      nodes: executedNodes,
+    }
+  } else {
+    return decisionNode
   }
 }
 

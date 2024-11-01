@@ -111,18 +111,21 @@ const conditionValidator = z.object({
   targetPropertyType: z.enum(['string', 'number', 'date']),
   compareTo: z.unknown(),
 })
-const nodeValidator = z.object({
+let nodeValidator = z.object({
   condition: conditionValidator,
-  action: actionValidator
+  action: actionValidator,
+  elseAction: actionValidator.optional(),
 });
+nodeValidator = nodeValidator.extend({
+  // sub-branches of logic
+  nodes: z.array(nodeValidator).optional()
+});
+const rootNodeValidator = nodeValidator.extend({
+  name: z.string(),
+})
 app.post("/execute-decision-tree", (req: Request, res: Response) => {
   const payloadSchema = z.object({
-    decisionTree: z.object({
-      name: z.string(),
-      action: actionValidator,
-      condition: conditionValidator,
-      nodes: z.array(nodeValidator).optional()
-    }),
+    decisionTree: rootNodeValidator,
     data: z.object({
       currentDay: z.coerce.date(),
     })
@@ -132,9 +135,8 @@ app.post("/execute-decision-tree", (req: Request, res: Response) => {
     res.status(422).json({ error: errorParsing })
     return
   }
-  console.log('REQUEST execute decision tree: ', payload.decisionTree.name)
+  console.log('REQUEST execute decision tree: ', payload.decisionTree.name, '. payload:', payload)
   const { data } = payload
-  // TODO make `logic` a TreeNode with potential children
   const decisionTree = parseDecisionTreeJSON(payload.decisionTree)
   const result = executeDecisionNode(decisionTree, data)
   console.log('RESULT executing decision tree:', payload.decisionTree.name, { result })

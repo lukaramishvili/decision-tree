@@ -35,7 +35,7 @@ export interface EmailAction extends ActionBase {
   executionResult?: EmailActionResult
 }
 export type Action = SMSAction | EmailAction
-export type ExecutedAction = RequiredFields<Action, 'executionResult'>
+export type ExecutedAction = RequiredFields<Action, 'executionResult'> & { conditionResult: boolean }
 
 /**
 * Results of executing an action.
